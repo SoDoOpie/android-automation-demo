@@ -27,7 +27,7 @@ class MockDevice:
 
 
 if __name__ == "__main__":
-    device = MockDevice()
+    device = Device('emulator-5554')
     worker = DeviceWorker(device=device, poll_interval=5)
 
     # ------------------------------------------------------------------ #
@@ -35,7 +35,8 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------ #
     now = datetime.now()
     schedule = DailySchedule(device_id=device.serial)
-    schedule.watch_instagram(duration_minutes=20, at=now + timedelta(seconds=5))
+    # schedule.watch_instagram(duration_minutes=20, at=now + timedelta(seconds=5))
+    schedule.open_app(app_name="com.zhiliaoapp.musically", at=now + timedelta(seconds=5))
     for task in schedule.tasks:
         worker.add(task)
     worker.run_forever(stop_when_empty=True)

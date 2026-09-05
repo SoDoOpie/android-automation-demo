@@ -15,7 +15,9 @@ from __future__ import annotations
 
 import logging
 import time
+import random
 from tasks.registry import register
+from uiautomator2 import Device
 
 logger = logging.getLogger(__name__)
 
@@ -34,31 +36,28 @@ def _sleep(seconds: float, description: str) -> None:
 # ---------------------------------------------------------------------------
 
 @register("watch_tiktok")
-def watch_tiktok(device, payload: dict) -> None:
+def watch_tiktok(device: Device, payload: dict) -> None:
     duration = payload.get("duration_seconds", 1200)
     duration = duration * DEMO_SPEED
     end_time = time.time() + duration
-    videos_watched = 0
     while time.time() < end_time:
-        device.swipe_ext("up", scale=0.8)
-        device.swipe_ext("down", scale=0.8)
-        videos_watched += 1
-        logger.info("  ↳ Watched TikTok... Total videos watched: %d", videos_watched)
+        ...
+    logger.info("Watched TikTok")
 
 @register("upload_tiktok")
-def upload_tiktok(device, payload: dict) -> None:
+def upload_tiktok(device: Device, payload: dict) -> None:
     video = payload.get("video_path", "video.mp4")
     _sleep(45, f"Uploading TikTok video: {video}")
 
 
 @register("watch_youtube")
-def watch_youtube(device, payload: dict) -> None:
+def watch_youtube(device: Device, payload: dict) -> None:
     duration = payload.get("duration_seconds", 600)
     _sleep(duration, f"Watching YouTube for {duration // 60} min")
 
 
 @register("watch_instagram")
-def watch_instagram(device, payload: dict) -> None:
+def watch_instagram(device: Device, payload: dict) -> None:
     duration = payload.get("duration_seconds", 600)
     _sleep(duration, f"Browsing Instagram Reels for {duration // 60} min")
 
@@ -68,7 +67,7 @@ def watch_instagram(device, payload: dict) -> None:
 # ---------------------------------------------------------------------------
 
 @register("download_app")
-def download_app(device, payload: dict) -> None:
+def download_app(device: Device, payload: dict) -> None:
     #_sleep(60, f"Downloading '{payload.get('app_name', '?')}' from Play Store")
     app_name = payload.get('app_name', '?')
     if app_name != "?":
@@ -85,12 +84,17 @@ def download_app(device, payload: dict) -> None:
         logger.info("  ↳ Play Store requires sign-in.")
 
 @register("open_app")
-def open_app(device, payload: dict) -> None:
-    _sleep(3, f"Opening '{payload.get('app_name', '?')}'")
+def open_app(device: Device, payload: dict) -> None:
+    app_name = payload.get('app_name')
+    if not app_name:
+        logger.error("No app name was provided")
+        raise Exception("No app name was provided")
 
+    device.app_start(app_name, wait=True)
+    #time.sleep(random.uniform(10, 20)) # wait for a bit
 
 @register("app_session")
-def app_session(device, payload: dict) -> None:
+def app_session(device: Device, payload: dict) -> None:
     app = payload.get("app_name", "?")
     duration = payload.get("duration_seconds", 300)
     _sleep(duration, f"App session: {app} for {duration // 60} min")
@@ -101,7 +105,7 @@ def app_session(device, payload: dict) -> None:
 # ---------------------------------------------------------------------------
 
 @register("demo")
-def demo(device, payload: dict) -> None:
+def demo(device: Device, payload: dict) -> None:
     """Used by unit tests via DummyDevice.do_action."""
     value = payload.get("value")
     if hasattr(device, "do_action"):
